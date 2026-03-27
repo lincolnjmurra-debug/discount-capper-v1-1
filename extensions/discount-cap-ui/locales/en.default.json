@@ -1,0 +1,8 @@
+{
+  "name": "Discount Cap Settings",
+  "description": "Configure percentage and max cap for the discount function.",
+  "title": "Discount cap configuration",
+  "percentageLabel": "Discount percentage",
+  "maxCapLabel": "Maximum discount amount",
+  "thresholdLabel": "Full percentage applies up to"
+}

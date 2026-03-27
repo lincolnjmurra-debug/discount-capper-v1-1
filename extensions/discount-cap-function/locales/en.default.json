@@ -1,0 +1,4 @@
+{
+  "name": "Discount Cap Function",
+  "description": "Applies a percentage discount with a configurable maximum cap."
+}
