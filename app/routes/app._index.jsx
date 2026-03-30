@@ -12,16 +12,18 @@ export default function Index() {
   const shopify = useAppBridge();
 
   const generateDiscount = async () => {
-    if (shopify.intents.invoke) {
-      await shopify.intents.invoke({
-        action: "create",
-        type: "shopify/Discount",
-        data: { type: "amount-off-order" },
-      });
-      return;
+    try {
+      // Opens Shopify's discount type selection flow so app-based discount
+      // types can be selected.
+      if (shopify.intents.invoke) {
+        await shopify.intents.invoke("create:shopify/Discount");
+        return;
+      }
+    } catch {
+      // Fall through to URL-based navigation.
     }
 
-    window.open("/admin/discounts", "_top");
+    window.open("/admin/discounts/new", "_top");
   };
 
   return (
@@ -46,13 +48,13 @@ export default function Index() {
       <s-section heading="Create a discount in Shopify">
         <s-paragraph>
           Click <s-text emphasis="bold">Generate a discount</s-text> to open
-          Shopify&apos;s discount creation flow, then choose your Discount Capper
-          function and configure percentage and cap.
+          Shopify&apos;s <s-text emphasis="bold">Select discount type</s-text>{" "}
+          flow, then choose your Discount Capper app discount type.
         </s-paragraph>
         <s-stack direction="inline" gap="base">
           <s-button onClick={generateDiscount}>Generate a discount</s-button>
-          <s-link href="/admin/discounts" target="_top">
-            Open discounts list
+          <s-link href="/admin/discounts/new" target="_top">
+            Open discount type selector
           </s-link>
         </s-stack>
       </s-section>
