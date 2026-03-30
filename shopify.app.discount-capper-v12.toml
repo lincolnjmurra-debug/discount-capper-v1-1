@@ -5,8 +5,23 @@ name = "Discount Capper v1.2"
 application_url = "https://discount-capper-v1-1.onrender.com"
 embedded = true
 
+[build]
+automatically_update_urls_on_dev = true
+
 [webhooks]
-api_version = "2026-01"
+api_version = "2026-04"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "https://discount-capper-v1-1.onrender.com/webhooks/compliance"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -16,3 +31,11 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [ "https://discount-capper-v1-1.onrender.com/auth/callback" ]
+
+[discount.metafields.app.function-configuration]
+type = "json"
+name = "Function configuration"
+
+  [discount.metafields.app.function-configuration.access]
+  admin = "merchant_read_write"
+  storefront = "none"
