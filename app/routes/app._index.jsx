@@ -1,14 +1,17 @@
+import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
-  return null;
+  const { session } = await authenticate.admin(request);
+  return { discountsUrl: `https://${session.shop}/admin/discounts` };
 };
 
 export default function Index() {
+  const { discountsUrl } = useLoaderData();
+
   const generateDiscount = async () => {
-    window.location.assign("/app/create-discount");
+    window.open(discountsUrl, "_top");
   };
 
   return (
@@ -33,13 +36,14 @@ export default function Index() {
       <s-section heading="Create a discount in Shopify">
         <s-paragraph>
           Click <s-text emphasis="bold">Generate a discount</s-text> to open
-          Shopify&apos;s <s-text emphasis="bold">Select discount type</s-text>{" "}
-          flow, then choose your Discount Capper app discount type.
+          your store&apos;s Discounts page. From there, click{" "}
+          <s-text emphasis="bold">Create discount</s-text> and select your
+          Discount Capper app discount type.
         </s-paragraph>
         <s-stack direction="inline" gap="base">
           <s-button onClick={generateDiscount}>Generate a discount</s-button>
-          <s-link href="/app/create-discount">
-            Open Discount Capper creation
+          <s-link href={discountsUrl} target="_top">
+            Open Discounts page
           </s-link>
         </s-stack>
       </s-section>
