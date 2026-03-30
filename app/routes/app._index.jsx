@@ -1,29 +1,46 @@
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const { admin } = await authenticate.admin(request);
 
-  return null;
+  let createPath = "/admin/discounts/new";
+
+  try {
+    const response = await admin.graphql(
+      `#graphql
+        query DiscountTypeCreatePath {
+          appDiscountTypes {
+            appKey
+            title
+            appBridge {
+              createPath
+            }
+          }
+        }`,
+    );
+    const responseJson = await response.json();
+    const appDiscountTypes = responseJson?.data?.appDiscountTypes ?? [];
+    const appKey = process.env.SHOPIFY_API_KEY;
+    const matchingType = appDiscountTypes.find((type) => type.appKey === appKey);
+    const rawPath = matchingType?.appBridge?.createPath;
+
+    if (typeof rawPath === "string" && rawPath.length > 0) {
+      createPath = normalizeAdminPath(rawPath);
+    }
+  } catch (error) {
+    console.error("Failed to load app discount create path", error);
+  }
+
+  return { createPath };
 };
 
 export default function Index() {
-  const shopify = useAppBridge();
+  const { createPath } = useLoaderData();
 
   const generateDiscount = async () => {
-    try {
-      // Opens Shopify's discount type selection flow so app-based discount
-      // types can be selected.
-      if (shopify.intents.invoke) {
-        await shopify.intents.invoke("create:shopify/Discount");
-        return;
-      }
-    } catch {
-      // Fall through to URL-based navigation.
-    }
-
-    window.open("/admin/discounts/new", "_top");
+    window.open(createPath, "_top");
   };
 
   return (
@@ -53,8 +70,8 @@ export default function Index() {
         </s-paragraph>
         <s-stack direction="inline" gap="base">
           <s-button onClick={generateDiscount}>Generate a discount</s-button>
-          <s-link href="/admin/discounts/new" target="_top">
-            Open discount type selector
+          <s-link href={createPath} target="_top">
+            Open Discount Capper creation
           </s-link>
         </s-stack>
       </s-section>
@@ -78,3 +95,19 @@ export default function Index() {
 export const headers = (headersArgs) => {
   return boundary.headers(headersArgs);
 };
+
+function normalizeAdminPath(rawPath) {
+  if (rawPath.startsWith("http://") || rawPath.startsWith("https://")) {
+    return rawPath;
+  }
+
+  if (rawPath.startsWith("/admin/")) {
+    return rawPath;
+  }
+
+  if (rawPath.startsWith("/")) {
+    return `/admin${rawPath}`;
+  }
+
+  return `/admin/${rawPath}`;
+}
