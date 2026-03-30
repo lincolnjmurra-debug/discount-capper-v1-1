@@ -1,46 +1,14 @@
-import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
-
-  let createPath = "/admin/discounts/new";
-
-  try {
-    const response = await admin.graphql(
-      `#graphql
-        query DiscountTypeCreatePath {
-          appDiscountTypes {
-            appKey
-            title
-            appBridge {
-              createPath
-            }
-          }
-        }`,
-    );
-    const responseJson = await response.json();
-    const appDiscountTypes = responseJson?.data?.appDiscountTypes ?? [];
-    const appKey = process.env.SHOPIFY_API_KEY;
-    const matchingType = appDiscountTypes.find((type) => type.appKey === appKey);
-    const rawPath = matchingType?.appBridge?.createPath;
-
-    if (typeof rawPath === "string" && rawPath.length > 0) {
-      createPath = normalizeAdminPath(rawPath);
-    }
-  } catch (error) {
-    console.error("Failed to load app discount create path", error);
-  }
-
-  return { createPath };
+  await authenticate.admin(request);
+  return null;
 };
 
 export default function Index() {
-  const { createPath } = useLoaderData();
-
   const generateDiscount = async () => {
-    window.open(createPath, "_top");
+    window.location.assign("/app/create-discount");
   };
 
   return (
@@ -70,7 +38,7 @@ export default function Index() {
         </s-paragraph>
         <s-stack direction="inline" gap="base">
           <s-button onClick={generateDiscount}>Generate a discount</s-button>
-          <s-link href={createPath} target="_top">
+          <s-link href="/app/create-discount">
             Open Discount Capper creation
           </s-link>
         </s-stack>
@@ -95,19 +63,3 @@ export default function Index() {
 export const headers = (headersArgs) => {
   return boundary.headers(headersArgs);
 };
-
-function normalizeAdminPath(rawPath) {
-  if (rawPath.startsWith("http://") || rawPath.startsWith("https://")) {
-    return rawPath;
-  }
-
-  if (rawPath.startsWith("/admin/")) {
-    return rawPath;
-  }
-
-  if (rawPath.startsWith("/")) {
-    return `/admin${rawPath}`;
-  }
-
-  return `/admin/${rawPath}`;
-}
