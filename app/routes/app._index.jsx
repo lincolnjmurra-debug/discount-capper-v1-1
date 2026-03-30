@@ -141,30 +141,21 @@ export default function Index() {
   const generateProduct = () => fetcher.submit({}, { method: "POST" });
 
   return (
-    <s-page heading="Shopify app template">
+    <s-page heading="Discount Capper v1.2">
       <s-button slot="primary-action" onClick={generateProduct}>
         Generate a product
       </s-button>
 
-      <s-section heading="Congrats on creating a new Shopify app 🎉">
+      <s-section heading="Set up capped percentage discounts">
         <s-paragraph>
-          This embedded app template uses{" "}
-          <s-link
-            href="https://shopify.dev/docs/apps/tools/app-bridge"
-            target="_blank"
-          >
-            App Bridge
-          </s-link>{" "}
-          interface examples like an{" "}
-          <s-link href="/app/additional">additional page in the app nav</s-link>
-          , as well as an{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            Admin GraphQL
-          </s-link>{" "}
-          mutation demo, to provide a starting point for app development.
+          Use this app to apply a percentage discount with a hard cap. For
+          example, 10% off can be capped at $250 so high-ticket orders do not
+          exceed your maximum discount amount.
+        </s-paragraph>
+        <s-paragraph>
+          Open{" "}
+          <s-link href="/app/how-to-use">How to use</s-link> for the full setup
+          and testing guide.
         </s-paragraph>
       </s-section>
       <s-section heading="Get started with products">
