@@ -2,10 +2,14 @@ import "@shopify/shopify-app-react-router/adapters/node";
 import {
   ApiVersion,
   AppDistribution,
+  BillingInterval,
   shopifyApp,
 } from "@shopify/shopify-app-react-router/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
+
+export const MONTHLY_PLAN = "Discount Capper Monthly";
+export const YEARLY_PLAN = "Discount Capper Yearly";
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -16,6 +20,26 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
+  billing: {
+    [MONTHLY_PLAN]: {
+      lineItems: [
+        {
+          amount: 1,
+          currencyCode: "USD",
+          interval: BillingInterval.Every30Days,
+        },
+      ],
+    },
+    [YEARLY_PLAN]: {
+      lineItems: [
+        {
+          amount: 10,
+          currencyCode: "USD",
+          interval: BillingInterval.Annual,
+        },
+      ],
+    },
+  },
   future: {
     expiringOfflineAccessTokens: true,
   },
