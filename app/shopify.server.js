@@ -11,6 +11,11 @@ import prisma from "./db.server";
 export const MONTHLY_PLAN = "Discount Capper Monthly";
 export const YEARLY_PLAN = "Discount Capper Yearly";
 
+const billingTestModeEnv = process.env.SHOPIFY_BILLING_TEST;
+export const isBillingTestMode =
+  billingTestModeEnv === "true" ||
+  (billingTestModeEnv == null && process.env.NODE_ENV !== "production");
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",

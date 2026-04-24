@@ -1,7 +1,12 @@
 import { Outlet, redirect, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
-import { MONTHLY_PLAN, YEARLY_PLAN, authenticate } from "../shopify.server";
+import {
+  MONTHLY_PLAN,
+  YEARLY_PLAN,
+  authenticate,
+  isBillingTestMode,
+} from "../shopify.server";
 
 export const loader = async ({ request }) => {
   const { billing } = await authenticate.admin(request);
@@ -12,7 +17,7 @@ export const loader = async ({ request }) => {
   if (!isPlanSelectionRoute && !isBillingBypassEnabled) {
     await billing.require({
       plans: [MONTHLY_PLAN, YEARLY_PLAN],
-      isTest: process.env.NODE_ENV !== "production",
+      isTest: isBillingTestMode,
       onFailure: async () => redirect("/app/select-plan"),
     });
   }

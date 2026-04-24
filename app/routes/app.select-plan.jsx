@@ -1,11 +1,16 @@
 import { Form, redirect, useLoaderData } from "react-router";
-import { MONTHLY_PLAN, YEARLY_PLAN, authenticate } from "../shopify.server";
+import {
+  MONTHLY_PLAN,
+  YEARLY_PLAN,
+  authenticate,
+  isBillingTestMode,
+} from "../shopify.server";
 
 export const loader = async ({ request }) => {
   const { billing } = await authenticate.admin(request);
   const billingStatus = await billing.check({
     plans: [MONTHLY_PLAN, YEARLY_PLAN],
-    isTest: process.env.NODE_ENV !== "production",
+    isTest: isBillingTestMode,
   });
 
   return {
@@ -27,7 +32,7 @@ export const action = async ({ request }) => {
 
   const billingStatus = await billing.check({
     plans: [MONTHLY_PLAN, YEARLY_PLAN],
-    isTest: process.env.NODE_ENV !== "production",
+    isTest: isBillingTestMode,
   });
   const currentPlanName = billingStatus.appSubscriptions?.[0]?.name || null;
   if (currentPlanName === selectedPlan) {
@@ -39,7 +44,7 @@ export const action = async ({ request }) => {
 
   return billing.request({
     plan: selectedPlan,
-    isTest: process.env.NODE_ENV !== "production",
+    isTest: isBillingTestMode,
     returnUrl,
   });
 };
