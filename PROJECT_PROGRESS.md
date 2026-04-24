@@ -15,6 +15,8 @@ Example target behavior:
 - Home page now includes a practical "Generate a discount" flow to the store Discounts page.
 - In-app documentation page ("How to use") has been added.
 - Shopify app version deployment is active and publishing to client id `cff692...`.
+- Webhook stability has improved after handler hardening; failure trend is decreasing.
+- Current open issue: embedded app launch intermittently lands on auth fallback/blank screen instead of loading `/app`.
 
 ## Active app/config references
 - Repository: `discount-capper-v1-1`
@@ -49,6 +51,9 @@ Example target behavior:
 11. Discount creation navigation simplified to store Discounts page (stable behavior).
 
 ## Recent deployed commits
+- `96906d2` Add global route error boundary to surface blank-screen errors
+- `4c05b63` Add auth login fail-safe with session-based and manual shop fallback
+- `65ba316` Improve auth fallback by deriving shop from host, reload URL, and id token
 - `17f988b` Fix embedded auth fallback by deriving shop from host param
 - `a5a9e7e` Harden webhook handlers for uninstall and scopes update
 - `0b13f98` Point default Shopify config to cff692 app
@@ -82,5 +87,14 @@ Example target behavior:
 1. Continue using explicit config when running Shopify CLI commands:
    - `npm run shopify -- app deploy -c shopify.app.toml --allow-updates`
 2. Keep Render env vars in sync with Shopify app settings.
-3. Remove remaining generic template copy from any screens not needed for production.
-4. Re-run Shopify automated checks after each release candidate and capture screenshots/logs for submission.
+3. Resolve remaining embedded launch issue:
+   - Confirm Render deployed latest commit `96906d2`.
+   - Capture any on-screen error from the new global error boundary.
+   - If fallback screen appears, use manual shop fallback field and capture resulting behavior.
+4. Remove remaining generic template copy from any screens not needed for production.
+5. Re-run Shopify automated checks after each release candidate and capture screenshots/logs for submission.
+
+## Session checkpoint (April 24, 2026)
+- Latest Git commit pushed: `96906d2` (global error boundary diagnostics).
+- Latest Shopify app version released: `discount-capper-v1-2-10` (active).
+- Standard deployment procedure is documented and includes both Render deploy and Shopify app deploy steps.
