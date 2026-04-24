@@ -1,6 +1,6 @@
 # Discount Capper v1.1/v1.2 Progress Log
 
-Last updated: March 30, 2026
+Last updated: April 24, 2026
 
 ## Project goal
 Build and deploy a Shopify app discount function that applies a percentage discount with a maximum dollar cap.
@@ -14,13 +14,26 @@ Example target behavior:
 - GitHub repo is connected and pushes are deploying via Render.
 - Home page now includes a practical "Generate a discount" flow to the store Discounts page.
 - In-app documentation page ("How to use") has been added.
+- Shopify app version deployment is active and publishing to client id `cff692...`.
 
 ## Active app/config references
 - Repository: `discount-capper-v1-1`
 - Active branch: `main`
-- Active Shopify app config file: `shopify.app.discount-capper-v12.toml`
+- Active Shopify app config file: `shopify.app.toml`
 - Active app client id prefix: `cff692...`
 - Hosted app URL: `https://discount-capper-v1-1.onrender.com`
+
+## Standard deployment procedure
+1. Commit and push to GitHub `main`.
+2. Wait for Render auto-deploy to finish and confirm app health.
+3. Deploy Shopify app version (required):
+   - `npm run shopify -- app deploy -c shopify.app.toml --allow-updates`
+4. Verify new active version timestamp:
+   - `npm run shopify -- app versions list -c shopify.app.toml`
+5. Smoke test in dev store:
+   - Open app from Shopify Admin
+   - Create discount via the app flow
+   - Confirm capped discount behavior
 
 ## Major milestones completed
 1. Initial discount cap app scaffold created.
@@ -36,6 +49,9 @@ Example target behavior:
 11. Discount creation navigation simplified to store Discounts page (stable behavior).
 
 ## Recent deployed commits
+- `17f988b` Fix embedded auth fallback by deriving shop from host param
+- `a5a9e7e` Harden webhook handlers for uninstall and scopes update
+- `0b13f98` Point default Shopify config to cff692 app
 - `4a221bb` Link generate discount button to store discounts page
 - `230eabc` Fix discount creation 404 with server-side App Bridge redirect
 - `a1b830c` Use app discount createPath for Generate a discount action
@@ -64,8 +80,7 @@ Example target behavior:
 
 ## Recommended next steps
 1. Continue using explicit config when running Shopify CLI commands:
-   - `npm run shopify -- app deploy --config shopify.app.discount-capper-v12.toml --allow-updates`
+   - `npm run shopify -- app deploy -c shopify.app.toml --allow-updates`
 2. Keep Render env vars in sync with Shopify app settings.
 3. Remove remaining generic template copy from any screens not needed for production.
 4. Re-run Shopify automated checks after each release candidate and capture screenshots/logs for submission.
-
