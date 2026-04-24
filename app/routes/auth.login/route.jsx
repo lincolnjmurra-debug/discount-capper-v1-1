@@ -1,9 +1,21 @@
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
-import { useLoaderData } from "react-router";
+import { redirect, useLoaderData } from "react-router";
 import { login } from "../../shopify.server";
 import { loginErrorMessage } from "./error.server";
+import { deriveShopFromHost } from "../../utils/shop-from-host.server";
 
 export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+  const hasShopParam = Boolean(url.searchParams.get("shop"));
+
+  if (!hasShopParam) {
+    const shopFromHost = deriveShopFromHost(url.searchParams.get("host"));
+    if (shopFromHost) {
+      url.searchParams.set("shop", shopFromHost);
+      throw redirect(`${url.pathname}?${url.searchParams.toString()}`);
+    }
+  }
+
   const errors = loginErrorMessage(await login(request));
 
   return { errors };

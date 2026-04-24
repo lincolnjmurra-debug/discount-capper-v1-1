@@ -1,10 +1,18 @@
 import { redirect, useLoaderData } from "react-router";
 import styles from "./styles.module.css";
+import { deriveShopFromHost } from "../../utils/shop-from-host.server";
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
+  const shopParam = url.searchParams.get("shop");
 
-  if (url.searchParams.get("shop")) {
+  if (shopParam) {
+    throw redirect(`/app?${url.searchParams.toString()}`);
+  }
+
+  const shopFromHost = deriveShopFromHost(url.searchParams.get("host"));
+  if (shopFromHost) {
+    url.searchParams.set("shop", shopFromHost);
     throw redirect(`/app?${url.searchParams.toString()}`);
   }
 
