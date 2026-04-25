@@ -3,6 +3,7 @@ import {
   ApiVersion,
   AppDistribution,
   BillingInterval,
+  BillingReplacementBehavior,
   shopifyApp,
 } from "@shopify/shopify-app-react-router/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
@@ -10,6 +11,12 @@ import prisma from "./db.server";
 
 export const MONTHLY_PLAN = "Discount Capper Monthly";
 export const YEARLY_PLAN = "Discount Capper Yearly";
+export const LEGACY_MONTHLY_PLAN = "Capora";
+export const BILLING_PLANS = [
+  MONTHLY_PLAN,
+  YEARLY_PLAN,
+  LEGACY_MONTHLY_PLAN,
+];
 
 const billingTestModeEnv = process.env.SHOPIFY_BILLING_TEST;
 export const isBillingTestMode =
@@ -27,6 +34,7 @@ const shopify = shopifyApp({
   distribution: AppDistribution.AppStore,
   billing: {
     [MONTHLY_PLAN]: {
+      replacementBehavior: BillingReplacementBehavior.ApplyImmediately,
       lineItems: [
         {
           amount: 1,
@@ -36,6 +44,7 @@ const shopify = shopifyApp({
       ],
     },
     [YEARLY_PLAN]: {
+      replacementBehavior: BillingReplacementBehavior.ApplyImmediately,
       lineItems: [
         {
           amount: 10,

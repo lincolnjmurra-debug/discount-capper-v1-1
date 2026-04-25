@@ -1,5 +1,7 @@
 import { Form, useLoaderData } from "react-router";
 import {
+  BILLING_PLANS,
+  LEGACY_MONTHLY_PLAN,
   MONTHLY_PLAN,
   YEARLY_PLAN,
   authenticate,
@@ -9,7 +11,7 @@ import {
 export const loader = async ({ request }) => {
   const { billing } = await authenticate.admin(request);
   const billingStatus = await billing.check({
-    plans: [MONTHLY_PLAN, YEARLY_PLAN],
+    plans: BILLING_PLANS,
     isTest: isBillingTestMode,
   });
 
@@ -31,21 +33,19 @@ export const action = async ({ request }) => {
   }
 
   const billingStatus = await billing.check({
-    plans: [MONTHLY_PLAN, YEARLY_PLAN],
+    plans: BILLING_PLANS,
     isTest: isBillingTestMode,
   });
   const currentPlanName = billingStatus.appSubscriptions?.[0]?.name || null;
-  if (currentPlanName === selectedPlan) {
+  const isLegacyMonthlyPlan =
+    selectedPlan === MONTHLY_PLAN && currentPlanName === LEGACY_MONTHLY_PLAN;
+  if (currentPlanName === selectedPlan || isLegacyMonthlyPlan) {
     return redirect("/app");
   }
-
-  const appUrl = process.env.SHOPIFY_APP_URL || new URL(request.url).origin;
-  const returnUrl = new URL("/app", appUrl).toString();
 
   return billing.request({
     plan: selectedPlan,
     isTest: isBillingTestMode,
-    returnUrl,
   });
 };
 
