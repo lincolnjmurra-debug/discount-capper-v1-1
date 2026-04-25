@@ -13,11 +13,9 @@ export const loader = async ({ request }) => {
     isTest,
   });
   const shopName = session.shop.replace(".myshopify.com", "");
-  const appSettingsUrl = `https://admin.shopify.com/store/${shopName}/settings/apps/app/${process.env.SHOPIFY_API_KEY}`;
   const appsSettingsUrl = `https://admin.shopify.com/store/${shopName}/settings/apps`;
 
   return {
-    appSettingsUrl,
     appsSettingsUrl,
     currentPlanName: billingStatus.appSubscriptions?.[0]?.name || null,
     hasActivePayment: billingStatus.hasActivePayment,
@@ -27,7 +25,6 @@ export const loader = async ({ request }) => {
 
 export default function SelectPlan() {
   const {
-    appSettingsUrl,
     appsSettingsUrl,
     currentPlanName,
     hasActivePayment,
@@ -65,9 +62,6 @@ export default function SelectPlan() {
               <s-list-item>Open Discount Capper again.</s-list-item>
             </s-ordered-list>
             <s-stack direction="inline" gap="base">
-              <s-link href={appSettingsUrl} target="_top">
-                Open app settings
-              </s-link>
               <s-link href={appsSettingsUrl} target="_top">
                 Open apps settings
               </s-link>
