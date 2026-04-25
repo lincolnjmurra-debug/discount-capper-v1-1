@@ -1,65 +1,45 @@
-import { Form, useLoaderData } from "react-router";
+import { useLoaderData } from "react-router";
 import {
   BILLING_PLANS,
-  LEGACY_MONTHLY_PLAN,
-  MONTHLY_PLAN,
-  YEARLY_PLAN,
   authenticate,
   getBillingTestMode,
 } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { admin, billing } = await authenticate.admin(request);
+  const { admin, billing, session } = await authenticate.admin(request);
   const isTest = await getBillingTestMode(admin);
   const billingStatus = await billing.check({
     plans: BILLING_PLANS,
     isTest,
   });
+  const shopName = session.shop.replace(".myshopify.com", "");
+  const appSettingsUrl = `https://admin.shopify.com/store/${shopName}/settings/apps/app/${process.env.SHOPIFY_API_KEY}`;
+  const appsSettingsUrl = `https://admin.shopify.com/store/${shopName}/settings/apps`;
 
   return {
-    monthlyPlan: MONTHLY_PLAN,
-    yearlyPlan: YEARLY_PLAN,
+    appSettingsUrl,
+    appsSettingsUrl,
     currentPlanName: billingStatus.appSubscriptions?.[0]?.name || null,
+    hasActivePayment: billingStatus.hasActivePayment,
     isTest,
   };
 };
 
-export const action = async ({ request }) => {
-  const { admin, billing, redirect } = await authenticate.admin(request);
-  const formData = await request.formData();
-  const selectedPlan = formData.get("plan");
-
-  const allowedPlans = new Set([MONTHLY_PLAN, YEARLY_PLAN]);
-  if (!allowedPlans.has(selectedPlan)) {
-    return new Response("Invalid plan selected", { status: 400 });
-  }
-
-  const isTest = await getBillingTestMode(admin);
-  const billingStatus = await billing.check({
-    plans: BILLING_PLANS,
-    isTest,
-  });
-  const currentPlanName = billingStatus.appSubscriptions?.[0]?.name || null;
-  const isLegacyMonthlyPlan =
-    selectedPlan === MONTHLY_PLAN && currentPlanName === LEGACY_MONTHLY_PLAN;
-  if (currentPlanName === selectedPlan || isLegacyMonthlyPlan) {
-    return redirect("/app");
-  }
-
-  return billing.request({
-    plan: selectedPlan,
-    isTest,
-  });
-};
-
 export default function SelectPlan() {
-  const { monthlyPlan, yearlyPlan, currentPlanName, isTest } = useLoaderData();
+  const {
+    appSettingsUrl,
+    appsSettingsUrl,
+    currentPlanName,
+    hasActivePayment,
+    isTest,
+  } = useLoaderData();
 
   return (
     <s-page heading="Choose a plan">
-      <s-section heading="Select billing plan">
+      <s-section heading="Select billing in Shopify">
         <s-paragraph>
-          To continue using Discount Capper, choose one of the plans below.
+          To continue using Discount Capper, open the app settings page and
+          choose a billing plan from Shopify Admin.
         </s-paragraph>
         {currentPlanName && (
           <s-banner tone="info">{`Current plan: ${currentPlanName}`}</s-banner>
@@ -69,23 +49,30 @@ export default function SelectPlan() {
             This store will use Shopify test billing.
           </s-banner>
         )}
+        {hasActivePayment && (
+          <s-banner tone="success">
+            Billing is active. Open the app to continue.
+          </s-banner>
+        )}
         <s-stack direction="block" gap="base">
           <s-box padding="base" borderWidth="base" borderRadius="base">
-            <s-heading>Monthly Plan</s-heading>
-            <s-paragraph>$1 per month</s-paragraph>
-            <Form method="post">
-              <input type="hidden" name="plan" value={monthlyPlan} />
-              <s-button type="submit">Choose Monthly</s-button>
-            </Form>
-          </s-box>
-
-          <s-box padding="base" borderWidth="base" borderRadius="base">
-            <s-heading>Yearly Plan</s-heading>
-            <s-paragraph>$10 per year</s-paragraph>
-            <Form method="post">
-              <input type="hidden" name="plan" value={yearlyPlan} />
-              <s-button type="submit">Choose Yearly</s-button>
-            </Form>
+            <s-heading>Shopify billing settings</s-heading>
+            <s-paragraph>Available plans: $1/month or $10/year.</s-paragraph>
+            <s-ordered-list>
+              <s-list-item>Open this app in Shopify Admin settings.</s-list-item>
+              <s-list-item>Choose Billing.</s-list-item>
+              <s-list-item>Select the plan you want.</s-list-item>
+              <s-list-item>Open Discount Capper again.</s-list-item>
+            </s-ordered-list>
+            <s-stack direction="inline" gap="base">
+              <s-link href={appSettingsUrl} target="_top">
+                Open app settings
+              </s-link>
+              <s-link href={appsSettingsUrl} target="_top">
+                Open apps settings
+              </s-link>
+              <s-link href="/app">Open app</s-link>
+            </s-stack>
           </s-box>
         </s-stack>
       </s-section>
