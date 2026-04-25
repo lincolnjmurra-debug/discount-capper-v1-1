@@ -4,19 +4,21 @@ import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import {
   BILLING_PLANS,
   authenticate,
-  isBillingTestMode,
+  getBillingTestMode,
 } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { billing, redirect } = await authenticate.admin(request);
+  const { admin, billing, redirect } = await authenticate.admin(request);
   const pathname = new URL(request.url).pathname;
   const isPlanSelectionRoute = pathname === "/app/select-plan";
   const isBillingBypassEnabled = process.env.BYPASS_BILLING === "true";
 
   if (!isPlanSelectionRoute && !isBillingBypassEnabled) {
+    const isTest = await getBillingTestMode(admin);
+
     await billing.require({
       plans: BILLING_PLANS,
-      isTest: isBillingTestMode,
+      isTest,
       onFailure: async () => redirect("/app/select-plan"),
     });
   }

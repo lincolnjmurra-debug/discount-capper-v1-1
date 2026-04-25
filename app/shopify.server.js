@@ -23,6 +23,38 @@ export const isBillingTestMode =
   billingTestModeEnv === "true" ||
   (billingTestModeEnv == null && process.env.NODE_ENV !== "production");
 
+const SHOP_BILLING_PLAN_QUERY = `#graphql
+  query ShopBillingPlan {
+    shop {
+      plan {
+        publicDisplayName
+        partnerDevelopment
+      }
+    }
+  }
+`;
+
+export async function getBillingTestMode(admin) {
+  if (billingTestModeEnv === "true") {
+    return true;
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    return true;
+  }
+
+  const response = await admin.graphql(SHOP_BILLING_PLAN_QUERY);
+  const {
+    data: {
+      shop: {
+        plan: { partnerDevelopment },
+      },
+    },
+  } = await response.json();
+
+  return Boolean(partnerDevelopment);
+}
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",

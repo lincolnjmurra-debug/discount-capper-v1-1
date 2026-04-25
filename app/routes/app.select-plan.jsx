@@ -5,25 +5,27 @@ import {
   MONTHLY_PLAN,
   YEARLY_PLAN,
   authenticate,
-  isBillingTestMode,
+  getBillingTestMode,
 } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { billing } = await authenticate.admin(request);
+  const { admin, billing } = await authenticate.admin(request);
+  const isTest = await getBillingTestMode(admin);
   const billingStatus = await billing.check({
     plans: BILLING_PLANS,
-    isTest: isBillingTestMode,
+    isTest,
   });
 
   return {
     monthlyPlan: MONTHLY_PLAN,
     yearlyPlan: YEARLY_PLAN,
     currentPlanName: billingStatus.appSubscriptions?.[0]?.name || null,
+    isTest,
   };
 };
 
 export const action = async ({ request }) => {
-  const { billing, redirect } = await authenticate.admin(request);
+  const { admin, billing, redirect } = await authenticate.admin(request);
   const formData = await request.formData();
   const selectedPlan = formData.get("plan");
 
@@ -32,9 +34,10 @@ export const action = async ({ request }) => {
     return new Response("Invalid plan selected", { status: 400 });
   }
 
+  const isTest = await getBillingTestMode(admin);
   const billingStatus = await billing.check({
     plans: BILLING_PLANS,
-    isTest: isBillingTestMode,
+    isTest,
   });
   const currentPlanName = billingStatus.appSubscriptions?.[0]?.name || null;
   const isLegacyMonthlyPlan =
@@ -45,12 +48,12 @@ export const action = async ({ request }) => {
 
   return billing.request({
     plan: selectedPlan,
-    isTest: isBillingTestMode,
+    isTest,
   });
 };
 
 export default function SelectPlan() {
-  const { monthlyPlan, yearlyPlan, currentPlanName } = useLoaderData();
+  const { monthlyPlan, yearlyPlan, currentPlanName, isTest } = useLoaderData();
 
   return (
     <s-page heading="Choose a plan">
@@ -60,6 +63,11 @@ export default function SelectPlan() {
         </s-paragraph>
         {currentPlanName && (
           <s-banner tone="info">{`Current plan: ${currentPlanName}`}</s-banner>
+        )}
+        {isTest && (
+          <s-banner tone="info">
+            This store will use Shopify test billing.
+          </s-banner>
         )}
         <s-stack direction="block" gap="base">
           <s-box padding="base" borderWidth="base" borderRadius="base">
