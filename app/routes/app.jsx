@@ -1,4 +1,4 @@
-import { Outlet, redirect, useLoaderData, useRouteError } from "react-router";
+import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import {
@@ -9,7 +9,7 @@ import {
 } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { billing } = await authenticate.admin(request);
+  const { billing, redirect } = await authenticate.admin(request);
   const pathname = new URL(request.url).pathname;
   const isPlanSelectionRoute = pathname === "/app/select-plan";
   const isBillingBypassEnabled = process.env.BYPASS_BILLING === "true";
@@ -22,9 +22,10 @@ export const loader = async ({ request }) => {
     });
   }
 
-  // eslint-disable-next-line no-undef
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
+
+export const shouldRevalidate = () => true;
 
 export default function App() {
   const { apiKey } = useLoaderData();

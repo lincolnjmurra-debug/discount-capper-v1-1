@@ -1,4 +1,4 @@
-import { Form, redirect, useLoaderData } from "react-router";
+import { Form, useLoaderData } from "react-router";
 import {
   MONTHLY_PLAN,
   YEARLY_PLAN,
@@ -21,7 +21,7 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  const { billing } = await authenticate.admin(request);
+  const { billing, redirect } = await authenticate.admin(request);
   const formData = await request.formData();
   const selectedPlan = formData.get("plan");
 

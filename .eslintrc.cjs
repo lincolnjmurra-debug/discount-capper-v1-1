@@ -91,6 +91,7 @@ module.exports = {
     },
   ],
   globals: {
+    process: "readonly",
     shopify: "readonly"
   },
 };
